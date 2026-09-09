@@ -25,6 +25,23 @@
 
 `README.md` 是總覽（備戰地圖），只在整體結論改變時更新，不當成雜物堆。
 
+## 網站（GitHub Pages）
+
+這個 repo 同時是一個 GitHub Pages 網站，網站內容由 Markdown 產生。
+
+**每次新增或修改 `.md` 之後，一定要重跑建置再 commit：**
+
+```bash
+pip install markdown        # 第一次才需要
+python3 tools/build_site.py
+```
+
+- 產生器：`tools/build_site.py`。新增文件不需要改這支程式，它會自動掃 `docs/ majors/ schools/ analysis/ portfolio/` 底下的 `.md`。
+- 產出：`index.html`、`guide.html`（由 `README.md` 轉出）、各分類的 `index.html` 與各篇 `.html`、`assets/site.css`。
+- **產生的 HTML 要一起 commit**，Pages 直接吃 branch 根目錄（有 `.nojekyll`，不走 Jekyll）。
+- 不要手改產生出來的 `.html`，會被下次建置覆蓋。要改樣式或版型就改 `tools/build_site.py`。
+- 新增分類目錄時，在 `build_site.py` 的 `SECTIONS` 加一行，並在該目錄放一份 `README.md` 當索引。
+
 ## 規則
 
 1. 檔名用 `YYYY-MM-DD-主題.md`，方便依時間排序。

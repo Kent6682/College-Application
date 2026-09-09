@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>首頁｜大學申請入學 備戰站</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="bar">
+    <a class="brand" href="index.html">大學申請入學 <b>備戰站</b></a>
+    <nav>
+      <a class="on" href="index.html">首頁</a>
+      <a href="guide.html">備戰地圖</a>
+      <a href="docs/index.html">制度與時程</a>
+      <a href="majors/index.html">科系研究</a>
+      <a href="schools/index.html">校系比較</a>
+      <a href="analysis/index.html">落點分析</a>
+      <a href="portfolio/index.html">學習歷程</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+
+
+<section class="hero">
+  <p class="eyebrow">115 學年度高一 · 目標 118 學年度申請入學 · 第二類組／電機資訊</p>
+  <h1>大學申請入學 備戰站</h1>
+  <p class="standfirst">簡章在哪裡拿、什麼時候拿、要挑哪些校系、現在這個學期該做什麼。
+     所有整理都收在這裡，依分類存放，逐年更新。</p>
+</section>
+
+<div class="counters" id="counters">
+  <div class="counter"><span class="k">本學期結束（學習歷程上傳）</span><span class="v" id="c2">—</span><span class="d">2027/01/20 前後</span></div>
+  <div class="counter"><span class="k">118 招生簡章公告</span><span class="v" id="c1">—</span><span class="d">推估 2028/11</span></div>
+  <div class="counter"><span class="k">你的學測（118 學年度）</span><span class="v" id="c3">—</span><span class="d">推估 2029/01</span></div>
+</div>
+<p class="cnote">倒數為依歷年型態<strong>推估</strong>，非官方公告日期。</p>
+
+<section>
+  <h2>年度對照</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>年級</th><th>學年度</th><th>期間</th><th>重點</th></tr></thead>
+    <tbody>
+      <tr class="now"><td>高一（現在）</td><td>115</td><td>2026/9 – 2027/6</td><td>打基礎、學程式、開始累積學習歷程</td></tr>
+      <tr><td>高二</td><td>116</td><td>2027/9 – 2028/6</td><td>選組（科技工程類、數 A）、考 APCS</td></tr>
+      <tr><td>高三</td><td>117</td><td>2028/9 – 2029/6</td><td>簡章公告、學測、申請入學</td></tr>
+      <tr><td>大一</td><td>118</td><td>2029/9 起</td><td>入學</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>分類</h2>
+  <div class="seccards"><a class="seccard" href="docs/index.html"><span class="sn">制度與時程</span><span class="sd">官方制度、簡章規定、學年度時程、名詞解釋</span><span class="sc">1 份文件</span></a><a class="seccard" href="majors/index.html"><span class="sn">科系研究</span><span class="sd">依理工家族 A–H 分類的科系研究</span><span class="sc">1 份文件</span></a><a class="seccard" href="schools/index.html"><span class="sn">校系比較</span><span class="sd">校系分則與比較表，決定志願的顆粒度</span><span class="sc">0 份文件</span></a><a class="seccard" href="analysis/index.html"><span class="sn">落點分析</span><span class="sd">歷年篩選標準、落點推估、志願排序策略</span><span class="sc">0 份文件</span></a><a class="seccard" href="portfolio/index.html"><span class="sn">學習歷程</span><span class="sd">學習歷程檔案、備審資料、面試準備</span><span class="sc">0 份文件</span></a></div>
+</section>
+
+<section>
+  <h2>最近的文件</h2>
+  <ul class="recent"><li><a href="docs/2026-09-09-高一到高三三年規劃.html"><span class="rt">高一到高三 三年規劃（現高一 → 118 學年度申請入學）</span><span class="rc">制度與時程</span></a></li><li><a href="majors/2026-09-09-A-電機資訊類-科系研究.html"><span class="rt">A 家族｜電機資訊類 科系研究</span><span class="rc">科系研究</span></a></li></ul>
+</section>
+
+<script>
+(function(){
+  var t=[["c1","2028-11-03"],["c2","2027-01-20"],["c3","2029-01-20"]];
+  var n=new Date(), t0=Date.UTC(n.getFullYear(),n.getMonth(),n.getDate());
+  t.forEach(function(p){
+    var el=document.getElementById(p[0]); if(!el) return;
+    var a=p[1].split("-"), t1=Date.UTC(+a[0],+a[1]-1,+a[2]);
+    var d=Math.round((t1-t0)/86400000);
+    el.textContent = d>0 ? d+" 天" : (d===0 ? "就是今天" : "已過");
+  });
+})();
+</script>
+
+</main>
+<footer class="foot">
+  <p>本站資料為升學備戰整理，<strong>非官方文件</strong>。日期與規定一律以
+     <a href="https://www.cac.edu.tw/">大學甄選入學委員會</a>、
+     <a href="https://www.ceec.edu.tw/">大學入學考試中心</a> 公告的簡章為準。</p>
+  <p class="built">網站產生時間：2026-09-09</p>
+</footer>
+</body>
+</html>

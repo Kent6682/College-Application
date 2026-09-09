@@ -41,6 +41,18 @@
 | [`docs/2026-09-09-高一到高三三年規劃.md`](docs/2026-09-09-高一到高三三年規劃.md) | **高一現在該做什麼**：學年度對照、類組說明、學習歷程規則、逐學期行動表 |
 | [`majors/2026-09-09-A-電機資訊類-科系研究.md`](majors/2026-09-09-A-電機資訊類-科系研究.md) | 電機／資工／電子／通訊／光電的差別、20 校分布、**APCS 管道** |
 
+### 網站
+
+本 repo 同時是一個 GitHub Pages 網站，內容由上述 Markdown 自動產生。
+
+```bash
+pip install markdown
+python3 tools/build_site.py      # 新增或修改 .md 之後重跑，產生的 HTML 一起 commit
+```
+
+產生器是 `tools/build_site.py`；`.nojekyll` 讓 Pages 直接提供根目錄的靜態檔，不經過 Jekyll。
+不要手改產生出來的 `.html`，要改版型請改產生器。
+
 ### 歸檔規則
 
 - 每次對話產出的內容，依主題放進上表對應目錄，不堆在根目錄。
