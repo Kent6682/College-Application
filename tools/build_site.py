@@ -15,8 +15,11 @@
 
 新增一份 .md 之後重跑本腳本即可，不需要改這支程式。
 """
-import os, re, html, datetime, pathlib
+import os, re, sys, html, datetime, pathlib
 import markdown
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from diagrams import DIAGRAMS
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE_TITLE = "大學申請入學 備戰站"
@@ -30,7 +33,7 @@ SECTIONS = [
     ("portfolio", "學習歷程",   "學習歷程檔案、備審資料、面試準備"),
 ]
 
-MD = markdown.Markdown(extensions=["tables", "fenced_code", "sane_lists", "attr_list"])
+MD = markdown.Markdown(extensions=["tables", "fenced_code", "sane_lists", "attr_list", "toc"])
 
 
 def read_title(text, fallback):
@@ -63,12 +66,35 @@ def render_md(text):
     body = re.sub(r"</table>", "</table></div>", body)
     # - [ ] 待辦清單
     body = body.replace("<li>[ ] ", '<li class="todo">').replace("<li>[x] ", '<li class="todo done">')
+    # <!-- diagram:name --> → 內嵌 SVG
+    def _dia(m):
+        return DIAGRAMS.get(m.group(1), "")
+    body = re.sub(r"<!--\s*diagram:([a-z0-9-]+)\s*-->", _dia, body)
     return body
+
+
+def build_toc(body):
+    """從 h2 建目錄。只取 h2——h3 以下會讓側欄太吵。"""
+    items = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body, re.S)
+    if len(items) < 3:
+        return ""
+    lis = "".join(
+        f'<li><a href="#{i}">{re.sub(r"<[^>]+>", "", t).strip()}</a></li>'
+        for i, t in items)
+    return f'<nav class="toc" aria-label="本頁目錄"><span class="tl">本頁內容</span><ol>{lis}</ol></nav>'
+
+
+def insert_toc(body):
+    toc = build_toc(body)
+    if not toc:
+        return body
+    m = re.search(r"</h1>", body)
+    return body[:m.end()] + toc + body[m.end():] if m else toc + body
 
 
 def nav(depth, active):
     up = "../" * depth
-    items = [("", "首頁", "index.html"), ("guide", "備戰地圖", "guide.html")]
+    items = [("", "首頁", "index.html"), ("guide", "總覽", "guide.html")]
     items += [(s, n, f"{s}/index.html") for s, n, _ in SECTIONS]
     out = []
     for key, name, href in items:
@@ -77,7 +103,7 @@ def nav(depth, active):
     return "\n      ".join(out)
 
 
-def page(depth, active, title, content, subtitle=""):
+def page(depth, active, title, content, subtitle="", crumb="", prevnext=""):
     up = "../" * depth
     sub = f'<p class="pagesub">{subtitle}</p>' if subtitle else ""
     return f"""<!doctype html>
@@ -101,8 +127,10 @@ def page(depth, active, title, content, subtitle=""):
   </div>
 </header>
 <main class="wrap">
+{crumb}
 {sub}
 {content}
+{prevnext}
 </main>
 <footer class="foot">
   <p>本站資料為升學備戰整理，<strong>非官方文件</strong>。日期與規定一律以
@@ -142,7 +170,9 @@ def main():
     # --- 備戰地圖（README.md） ---
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     (ROOT / "guide.html").write_text(
-        page(0, "guide", "備戰地圖", render_md(readme)), encoding="utf-8")
+        page(0, "guide", "總覽", insert_toc(render_md(readme)),
+             "", '<nav class="crumb"><a href="index.html">首頁</a><span>›</span><span>總覽</span></nav>'),
+        encoding="utf-8")
 
     # --- 各分類 ---
     for sec, name, desc in SECTIONS:
@@ -159,12 +189,28 @@ def main():
         )
         listing = f'<h2 class="lh">這個分類的文件</h2><div class="cards">{cards}</div>' if cards \
                   else '<h2 class="lh">這個分類的文件</h2><p class="empty">還沒有文件。</p>'
+        crumb_cat = f'<nav class="crumb"><a href="../index.html">首頁</a><span>›</span><span>{html.escape(name)}</span></nav>'
         (d / "index.html").write_text(
-            page(1, sec, name, idx_body + listing, desc), encoding="utf-8")
+            page(1, sec, name, idx_body + listing, desc, crumb_cat), encoding="utf-8")
 
-        for doc in all_docs[sec]:
+        docs = all_docs[sec]
+        for n, doc in enumerate(docs):
+            crumb = (f'<nav class="crumb"><a href="../index.html">首頁</a><span>›</span>'
+                     f'<a href="index.html">{html.escape(name)}</a><span>›</span>'
+                     f'<span>{html.escape(doc["title"])}</span></nav>')
+            links = []
+            if n > 0:
+                links.append(f'<a class="pn prev" href="{docs[n-1]["slug"]}.html">'
+                             f'<span class="pl">上一篇</span>'
+                             f'<span class="pt">{html.escape(docs[n-1]["title"])}</span></a>')
+            if n < len(docs) - 1:
+                links.append(f'<a class="pn next" href="{docs[n+1]["slug"]}.html">'
+                             f'<span class="pl">下一篇</span>'
+                             f'<span class="pt">{html.escape(docs[n+1]["title"])}</span></a>')
+            pn = f'<nav class="prevnext">{"".join(links)}</nav>' if links else ""
             (d / f'{doc["slug"]}.html').write_text(
-                page(1, sec, doc["title"], render_md(doc["text"])), encoding="utf-8")
+                page(1, sec, doc["title"], insert_toc(render_md(doc["text"])),
+                     "", crumb, pn), encoding="utf-8")
 
     # --- 首頁 ---
     sec_cards = "".join(
@@ -372,6 +418,55 @@ li.todo.done::before{background:var(--ok);border-color:var(--ok)}
 .card .ct{font-family:var(--serif);font-weight:700;font-size:16.5px;line-height:1.45}
 .card .cm{font-size:12.5px;color:var(--muted);line-height:1.55}
 .empty{color:var(--muted);font-size:14.5px}
+
+/* 麵包屑 */
+.crumb{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;
+  font-size:12.5px;color:var(--muted);margin:0 0 20px}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{color:var(--seal);text-decoration:underline}
+.crumb span{opacity:.6}
+
+/* 本頁目錄 */
+.toc{border:1px solid var(--line);border-left:3px solid var(--accent);
+  background:var(--surface);padding:16px 22px 18px;margin:0 0 30px}
+.toc .tl{font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  color:var(--muted);display:block;margin-bottom:8px}
+.toc ol{margin:0;padding-left:1.5em;max-width:none;columns:2;column-gap:32px}
+.toc li{margin:3px 0;font-size:14px;break-inside:avoid}
+.toc a{text-decoration:none}
+.toc a:hover{text-decoration:underline}
+@media (max-width:620px){.toc ol{columns:1}}
+
+/* 圖 */
+.fig{margin:28px 0 30px;padding:0}
+.fig svg{display:block;width:100%;height:auto;max-width:100%;
+  color:var(--ink-2);overflow:visible}
+.fig svg text{font-family:var(--sans);fill:currentColor}
+.fig svg .t1{font-size:13px;font-weight:700}
+.fig svg .t2{font-size:11.5px;opacity:.72}
+.fig svg .t3{font-family:var(--mono);font-size:11px;letter-spacing:.06em;opacity:.8}
+.fig svg .bx{fill:var(--surface);stroke:currentColor;stroke-width:1}
+.fig svg .bx.dim{opacity:.45;stroke-dasharray:4 3}
+.fig svg .ln{stroke:currentColor;stroke-width:1.3;fill:none}
+.fig svg .dot{fill:currentColor;stroke:none}
+.fig svg text.hot{fill:var(--seal)}
+.fig svg rect.hot{stroke:var(--seal);stroke-width:1.8;fill:var(--seal-soft)}
+.fig svg line.hot{stroke:var(--seal);fill:none}
+.fig svg circle.hot{fill:var(--seal);stroke:none}
+.fig figcaption{font-size:13px;color:var(--muted);line-height:1.7;
+  max-width:68ch;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.fig figcaption strong{color:var(--ink-2)}
+
+/* 上下篇 */
+.prevnext{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:14px;margin-top:56px;padding-top:26px;border-top:3px double var(--line-strong)}
+.pn{display:flex;flex-direction:column;gap:3px;padding:14px 18px;
+  background:var(--surface);border:1px solid var(--line);
+  text-decoration:none;color:inherit}
+.pn:hover{border-color:var(--seal)}
+.pn .pl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--seal)}
+.pn .pt{font-size:14.5px;font-weight:500;line-height:1.5}
+.pn.next{text-align:right}
 
 .foot{border-top:3px double var(--line-strong);background:var(--surface)}
 .foot p{max-width:980px;margin:0 auto;padding:18px 24px 0;font-size:13px;color:var(--muted)}

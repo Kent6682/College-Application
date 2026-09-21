@@ -41,6 +41,12 @@ python3 tools/build_site.py
 - **產生的 HTML 要一起 commit**，Pages 直接吃 branch 根目錄（有 `.nojekyll`，不走 Jekyll）。
 - 不要手改產生出來的 `.html`，會被下次建置覆蓋。要改樣式或版型就改 `tools/build_site.py`。
 - 新增分類目錄時，在 `build_site.py` 的 `SECTIONS` 加一行，並在該目錄放一份 `README.md` 當索引。
+- **流程圖**：在 Markdown 裡寫 `<!-- diagram:名稱 -->` 會插入 `tools/diagrams.py` 裡的內嵌 SVG。
+  目前有 `flow-apply`（申請入學八步驟）、`funnel-sieve`（一階篩選漏斗）、
+  `timeline-3y`（高一到大一時間軸）、`map-majors`（理工八家族對應學群）。
+  新圖加在 `diagrams.py` 的 `DIAGRAMS`：線條文字用 `currentColor`，只有承載意義的元素加 `class="hot"`
+  （由 site.css 上成強調色），深淺兩種主題都要讀得到。圖要說明機制，不是裝飾。
+- 文件有 3 個以上 `##` 標題時會自動產生「本頁內容」目錄，不必手寫。
 
 ## 規則
 
